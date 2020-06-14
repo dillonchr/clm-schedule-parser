@@ -6,6 +6,7 @@ from dateutil.parser import parse
 re_meeting_date = re.compile("^[A-Z]+ \d+-[A-Z]* ?\d+ \|")
 
 meeting_date = None
+last_item_is_song = False
 
 def get_true_meeting_date(date_str):
     return parse(date_str) + datetime.timedelta(days=1)
@@ -31,12 +32,17 @@ for line in sys.stdin:
         if len(pieces) < 2:
             song_num = re.match("^Song (\d+)", line)
             if song_num:
-                print("<=>Song {}".format(song_num.group(1)))
+                print("[=]Song {}".format(song_num.group(1)))
+                last_item_is_song = True
             else:
                 print("=>{}".format(line))
         else:
             title, speaker = pieces
+            if not last_item_is_song:
+                print("...-")
             print("( ) {}".format(re.sub(":$", "", title)))
+
+            last_item_is_song = False
 
             speaker = re.sub(" \d:\d+$", "", speaker)
             if "Opening Comments" == title and "Chairman" in speaker:
