@@ -9,7 +9,7 @@ As of now, here's how it works, don't laugh, I'm serious.
 1. Download PDF version of schedule
 2. Use imagemagick to create bitmaps `convert -density 300 schedule.pdf schedule.png`
 3. Use tesseract to OCR all text out `for f in schedule-*.png; do tesseract $f - >>text.out.txt; done`
-4. Connect all the pipes: `cat text.out.txt | python read.py | python ~/git/receiptprinter/print.py`
+4. Connect all the pipes: `cat text.out.txt | python read.py | python ~/git/receiptprinter/print.py > /dev/usb/lp0`
 
 ## Why not just read PDF text?
 
