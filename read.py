@@ -17,6 +17,8 @@ for line in sys.stdin:
     line = line.strip()
     if not line:
         pass
+    elif  meeting_date and re.match("^Printed on ", line):
+        break
     elif re_meeting_date.match(line):
         if meeting_date:
             break
@@ -30,9 +32,13 @@ for line in sys.stdin:
         line = re.sub("^[^\"A-Za-z0-9]+ ", "", line)
         pieces = re.split(" \([^)]+\) ", line)
         if len(pieces) < 2:
-            song_num = re.match("^Song (\d+)", line)
+            song_num = re.match("^Song \d+", line)
             if song_num:
-                print("[=]Song {}".format(song_num.group(1)))
+                print("[=]{}".format(song_num.group(0)))
+                prayer = re.search("Prayer ([^\d]+) ", line)
+                if prayer:
+                    print("( ) Prayer")
+                    print("=>{}".format(prayer.group(1)))
                 last_item_is_song = True
             else:
                 print("=>{}".format(line))
