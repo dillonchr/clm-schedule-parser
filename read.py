@@ -9,7 +9,7 @@ meeting_date = None
 last_item_is_song = False
 
 def get_true_meeting_date(date_str):
-    return parse(date_str) + datetime.timedelta(days=1)
+    return (parse(date_str) + datetime.timedelta(days=1)).replace(hour=23, minute=59)
 
 chairman = ""
 
