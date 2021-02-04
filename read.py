@@ -15,7 +15,7 @@ chairman = ""
 
 for line in sys.stdin:
     line = line.strip()
-    if not line:
+    if not line or re.search("(Treasures from God's Word|Apply Yourself to the Field Ministry|Living As Christians|Our Christian Life and Ministry)", line, re.IGNORECASE):
         pass
     elif  meeting_date and re.match("^Printed on ", line):
         break
