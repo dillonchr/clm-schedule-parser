@@ -3,7 +3,7 @@ import re
 import datetime
 from dateutil.parser import parse
 
-re_meeting_date = re.compile("^[A-Z]+ \d+-[A-Z]* ?\d+ \|")
+re_meeting_date = re.compile("^[A-Z]+ \d+-[A-Z]* ?\d+ .*")
 
 meeting_date = None
 last_item_is_song = False
