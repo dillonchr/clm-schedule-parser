@@ -24,23 +24,30 @@ def print_assignment(title, speakers):
 
 for line in sys.stdin:
     line = line.strip()
+    # if it's a new date
     if re_meeting_date.match(line):
         if meeting_date:
+            # quit early
             break
         else:
+            # read the current meeting's date
             meeting_date = get_true_meeting_date(line.split(" | ")[0])
             if (datetime.datetime.today() <= meeting_date):
                 print("<=>{}".format(meeting_date.strftime("%a %b %d")))
             else:
+                # reset if it's already past
                 meeting_date = None
     elif meeting_date:
-        # line = re.sub("^[^\"A-Za-z0-9]+ ", "", line)
+        # if it's like an assignment line
+        # [7:40] Talk Title: (Duration) Speaker
         if re.search("^\[\d:\d{2}\] ", line):
             line = re.sub("^\[\d:\d{2}\] ", "", line)
             # then it's an assignment
+            # CBS has conductor and reader and no duration
             if re.search("Congregation Bible Study", line):
                 cbs = re.search("^.*Conductor: (.*) Reader: (.*)$", line)
                 print_assignment("Congregation Bible Study", "{} & {}".format(cbs.group(1), cbs.group(2)))
+            # other talks have the normal splits
             else:
                 pieces = re.split(" \([^)]+\) ", line)
                 if len(pieces) == 2:
@@ -50,8 +57,3 @@ for line in sys.stdin:
                     if re.search("^Chairman: ", line):
                         chairman = re.sub(" Prayer:.*$", "", re.sub("^Chairman: ", "", line))
                         print_assignment("Chairman", chairman)
-        else:
-            prayer = re.search("Prayer: ([^\d]+) ", line)
-            if prayer:
-                print("( ) Prayer")
-                print("=>{}".format(prayer.group(1)))
