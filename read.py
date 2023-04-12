@@ -3,60 +3,55 @@ import re
 import datetime
 from dateutil.parser import parse
 
-re_meeting_date = re.compile("^[A-Z]+ \d+ ?- ?[A-Z]* ?\d+ .*")
+re_meeting_date = re.compile("^202\d/\d{2}/\d{2} | ")
 
 meeting_date = None
-last_item_is_song = False
+chairman = ""
 
 def get_true_meeting_date(date_str):
-    return (parse(date_str) + datetime.timedelta(days=1)).replace(hour=23, minute=59)
+    return parse(date_str)
 
-chairman = ""
+def print_assignment(title, speakers):
+    print("...-")
+    print("( ) {}".format(re.sub(":$", "", title)))
+    if re.search("^Prayer: ", speakers.strip()):
+        print("=>{}".format(chairman))
+        print_assignment("Closing Prayer", re.sub("^Prayer: ", "", speakers))
+    else:
+        for s in speakers.split(" & "):
+            print("=>{}".format(s))
+
 
 for line in sys.stdin:
     line = line.strip()
-    if not line or re.search("(Treasures from God's Word|Apply Yourself to the Field Ministry|Living As Christians|Our Christian Life and Ministry)", line, re.IGNORECASE):
-        pass
-    elif  meeting_date and re.match("^Printed on ", line):
-        break
-    elif re_meeting_date.match(line):
+    if re_meeting_date.match(line):
         if meeting_date:
             break
         else:
-            meeting_date = get_true_meeting_date(line.split("-")[0])
+            meeting_date = get_true_meeting_date(line.split(" | ")[0])
             if (datetime.datetime.today() <= meeting_date):
                 print("<=>{}".format(meeting_date.strftime("%a %b %d")))
             else:
                 meeting_date = None
     elif meeting_date:
-        line = re.sub("^[^\"A-Za-z0-9]+ ", "", line)
-        pieces = re.split(" \([^)]+\) ", line)
-        if len(pieces) < 2:
-            song_num = re.match("^Song \d+", line)
-            if song_num:
-                print("[=]{}".format(song_num.group(0)))
-                prayer = re.search("Prayer ([^\d]+) ", line)
-                if prayer:
-                    print("( ) Prayer")
-                    print("=>{}".format(prayer.group(1)))
-                last_item_is_song = True
+        # line = re.sub("^[^\"A-Za-z0-9]+ ", "", line)
+        if re.search("^\[\d:\d{2}\] ", line):
+            line = re.sub("^\[\d:\d{2}\] ", "", line)
+            # then it's an assignment
+            if re.search("Congregation Bible Study", line):
+                cbs = re.search("^.*Conductor: (.*) Reader: (.*)$", line)
+                print_assignment("Congregation Bible Study", "{} & {}".format(cbs.group(1), cbs.group(2)))
             else:
-                print("=>{}".format(line))
-        else:
-            title, speaker = pieces
-            if not last_item_is_song:
-                print("...-")
-            print("( ) {}".format(re.sub(":$", "", title)))
-
-            last_item_is_song = False
-
-            speaker = re.sub(" \d:\d+$", "", speaker)
-            if "Opening Comments" == title and "Chairman" in speaker:
-                chairman = re.sub("^Chairman ", "", speaker)
-                print("=>{}".format(chairman))
-            else:
-                if "Chairman" in speaker:
-                    print("=>{}".format(chairman))
+                pieces = re.split(" \([^)]+\) ", line)
+                if len(pieces) == 2:
+                    title, speaker = pieces
+                    print_assignment(title, speaker)
                 else:
-                    for s in speaker.split("/"):
-                        print("=>{}".format(s))
+                    if re.search("^Chairman: ", line):
+                        chairman = re.sub(" Prayer:.*$", "", re.sub("^Chairman: ", "", line))
+                        print_assignment("Chairman", chairman)
+        else:
+            prayer = re.search("Prayer: ([^\d]+) ", line)
+            if prayer:
+                print("( ) Prayer")
+                print("=>{}".format(prayer.group(1)))
