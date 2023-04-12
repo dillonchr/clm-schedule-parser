@@ -9,7 +9,7 @@ meeting_date = None
 chairman = ""
 
 def get_true_meeting_date(date_str):
-    return parse(date_str)
+    return parse(date_str).replace(hour=23, minute=59)
 
 def print_assignment(title, speakers):
     print("...-")
